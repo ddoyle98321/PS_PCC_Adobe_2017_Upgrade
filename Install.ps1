@@ -41,7 +41,7 @@ function UninstallSoftware()
     
 function InstallSoftware()
     $InstallCMD = ".\"$ProductName"\Build\"$ProductName".msi"
-    Write-Host "`nInstalling Adobe Creative Cloud 2017...please wait." -ForegroundColor Green
+    Write-Host "`nInstalling "$ProductName"...please wait." -ForegroundColor Green
     try {
         Start-Process "MSIEXEC.EXE /QB! /I "$InstallCMD" /LV*+! "$LOG_DIR""$ProductName"_Inst.log" -Verb runAs -Wait -ErrorAction SilentlyContinue
     }
