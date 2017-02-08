@@ -2,8 +2,9 @@
 #   Created on January 31, 2017 by David Doyle
 #   
 
-$LOG_DIR = "C:\FLOGS\Adobe\Design_Standard_CC_x64\2017"
 $ProductName = "Adobe Design Standard 2017 PCC"
+$LOG_DIR = "C:\FLOGS\"$ProductName
+$ScriptLOG = $LOG_DIR"\_validateInst.log"
 
 # Create log folder
    New-Item -ItemType Directory -Force -Path $LOG_DIR
@@ -44,6 +45,8 @@ function InstallSoftware()
     Write-Host "`nInstalling "$ProductName"...please wait." -ForegroundColor Green
     try {
         Start-Process "MSIEXEC.EXE /QB! /I "$InstallCMD" /LV*+! "$LOG_DIR""$ProductName"_Inst.log" -Verb runAs -Wait -ErrorAction SilentlyContinue
+        Write-Host "`nInstalling "$ProductName"." | Out-File -FilePath $ScriptLOG -Append
+        Write-Host "`n"$InstallCMD
     }
 
 CheckVersion
