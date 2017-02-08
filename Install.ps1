@@ -2,6 +2,11 @@
 #   Created on January 31, 2017 by David Doyle
 #   
 
+$LOG_DIR = "C:\FLOGS\Adobe\Design_Standard_CC_x64\2017"
+$ProductName = "Adobe Design Standard 2017 PCC"
+
+# Create log folder
+   New-Item -ItemType Directory -Force -Path $LOG_DIR
 
 function CheckVersion() 
     $computername = ($env:computername).ToUpper()
@@ -27,7 +32,7 @@ function UninstallSoftware()
     try {
         Start-Process ".\Uninstaller\AdobeCCUninstaller.exe" -Verb runAs -Wait -ErrorAction SilentlyContinue
         $TempPath = Get-ChildItem -Path Env:TEMP | Select-Object value | Format-Table -HideTableHeaders
-        $Result = Select-String -Path $TempPath"\AdobeCCUninstaller.log"
+        $Result = Select-String -Path $LOG_DIR"\AdobeCCUninstaller.log"
         InstallSoftware
         }
     catch {
@@ -35,9 +40,10 @@ function UninstallSoftware()
     }
     
 function InstallSoftware()
+    $InstallCMD = ".\"$ProductName"\Build\"$ProductName".msi"
     Write-Host "`nInstalling Adobe Creative Cloud 2017...please wait." -ForegroundColor Green
     try {
-        Start-Process ".\Installer\AdobeDesignStandard2017PCC\Build\Setup.exe" -Verb runAs -Wait -ErrorAction SilentlyContinue
+        Start-Process "MSIEXEC.EXE /QB! /I "$InstallCMD" /LV*+! "$LOG_DIR""$ProductName"_Inst.log" -Verb runAs -Wait -ErrorAction SilentlyContinue
     }
 
 CheckVersion
