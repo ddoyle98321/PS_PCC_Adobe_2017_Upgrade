@@ -3,50 +3,56 @@
 #   
 
 $ProductName = "Adobe Design Standard 2017 PCC"
-$LOG_DIR = "C:\FLOGS\"$ProductName
-$ScriptLOG = $LOG_DIR"\_validateInst.log"
+$LOG_DIR = "C:\FLOGS\Adobe\$ProductName"
+$ScriptLOG = "\_validateInst.log"
 
 # Create log folder
    New-Item -ItemType Directory -Force -Path $LOG_DIR
 
-function CheckVersion() 
+function CheckVersion {
     $computername = ($env:computername).ToUpper()
-    $APV = Get-WmiObject -Name $computername -Namespace "root\cimv2\sms" -Query "SELECT * FROM SMS_InstalledSoftware" | Where-Object ARPDisplayName -Like "Adobe Photoshop*" | Select-Object -ExpandProperty ProductVersion
-    $APV = $APV.ToString().Substring(0,2)
+    $APV2 = Get-WmiObject -Name $computername -Namespace "root\cimv2\sms" -Query "SELECT * FROM SMS_InstalledSoftware" | Where-Object ARPDisplayName -Like "Adobe Photoshop*" | Select-Object -ExpandProperty ProductVersion
+    $APV = $APV2.ToString().Substring(0,2)
     If ($APV -eq "18")
         { 
-        Write-host "`nThe latest verion is already installed. Window closing." -ForegroundColor Yellow
+        Write-host "`nThe latest verion is already installed. Window closing." -ForegroundColor Red
         Read-Host "`nPress Enter to quit" -ForegroundColor Yellow
         exit
         }
-    elseif ($APV -ge "1" -and -le "17") 
+    elseif ($APV -ge "1" -and $APV -le "17") 
         {
+        Write-Host "`nUninstalling Adobe CC Version $APV" -ForegroundColor Yellow
         UninstallSoftware
         }
     Else
         {
         InstallSoftware
         }
-
-function UninstallSoftware()
+}
+function UninstallSoftware {
     Write-Host "`nUninstalling old version of Adobe Creative Cloud...please be patient!" -ForegroundColor Green
     try {
-        Start-Process ".\Uninstaller\AdobeCCUninstaller.exe" -Verb runAs -Wait -ErrorAction SilentlyContinue
+        Start-Process ".\Adobe Uninstaller\Uninstaller\AdobeCCUninstaller.exe" -Verb runAs -Wait -ErrorAction Stop
         $TempPath = Get-ChildItem -Path Env:TEMP | Select-Object value | Format-Table -HideTableHeaders
-        $Result = Select-String -Path $LOG_DIR"\AdobeCCUninstaller.log"
+        $Result = Select-String -Path $LOG_DIR\AdobeCCUninstaller.log
+        Write-Host "Adobe CC Photoshop Version $APV uninstalled." | Out-File $Result -Append
         InstallSoftware
         }
     catch {
-        
+        Write-Host "There's an error installing."
     }
-    
-function InstallSoftware()
-    $InstallCMD = ".\"$ProductName"\Build\"$ProductName".msi"
-    Write-Host "`nInstalling "$ProductName"...please wait." -ForegroundColor Green
+}
+function InstallSoftware {
+    $InstallCMD = .\$ProductName\Build\$ProductName.msi
+    Write-Host "`nInstalling $ProductName...please wait." -ForegroundColor Green
     try {
-        Start-Process "MSIEXEC.EXE /QB! /I "$InstallCMD" /LV*+! "$LOG_DIR""$ProductName"_Inst.log" -Verb runAs -Wait -ErrorAction SilentlyContinue
-        Write-Host "`nInstalling "$ProductName"." | Out-File -FilePath $ScriptLOG -Append
+        Start-Process "MSIEXEC.EXE /QB! /I $InstallCMD /LV*+! $LOG_DIR\$ProductName_Inst.log" -Verb runAs -Wait -ErrorAction SilentlyContinue
+        Write-Host "`nInstalling "$ProductName"." | Out-File -FilePath $LOG_DIR$ScriptLOG -Append
         Write-Host "`n"$InstallCMD
     }
+    catch {
 
-CheckVersion
+    }
+}
+#CheckVersion
+UninstallSoftware
